@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Cartograms with d3 &amp; TopoJSON</title>
+<head>
+    <title>World scaled by number of documents in Web of Science by Authors Living There</title>
     <meta charset="utf-8">
     <meta property="og:image" content="placeholder.png">
     <script src="http://d3js.org/d3.v3.min.js"></script>
@@ -10,415 +10,447 @@
     <script src="cartogram.js"></script>
     <style type="text/css">
 
-      body {
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; 
-        font-size: 14px;
-        line-height: 1.4em;
-        padding: 0;
-        margin: 0;
-      }
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            padding: 0;
+            margin: 0;
+        }
 
-      #container {
-        width: 800px;
-        margin: 20px auto;
-      }
+        #container {
+            width: 800px;
+            margin: 20px auto;
+        }
 
-      h1 {
-        font-size: 200%;
-        margin: 0 0 15px 0;
-      }
+        h1 {
+            font-size: 140%;
+            margin: 0 0 15px 0;
+            text-align: center;
+        }
 
-      h2 {
-        font-size: 160%;
-        margin: 0 0 10px 0;
-      }
+        h2 {
+            font-size: 160%;
+            margin: 0 0 10px 0;
+        }
 
-      p {
-        margin: 0 0 10px;
-      }
+        p {
+            margin: 0 0 10px;
+        }
 
-      form, form > * {
-        margin: 0;
-      }
+        form, form > * {
+            margin: 0;
+        }
 
-      #status {
-        color: #999;
-      }
+        #map-container {
+            width: 800px;
+            height: 500px;
+            text-align: center;
+            position: relative;
+            margin: 20px 0;
+        }
 
-      #map-container {
-        height: 500px;
-        text-align: center;
-        position: relative;
-        margin: 20px 0;
-      }
+        #map {
+            display: block;
+            position: absolute;
+            background: #fff;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
 
-      #map {
-        display: block;
-        position: absolute;
-        background: #fff;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-      }
+        path.state {
+            stroke: #666;
+            stroke-width: .5;
+        }
 
-      path.state {
-        stroke: #666;
-        stroke-width: .5;
-      }
+        path.state:hover {
+            stroke: #000;
+        }
 
-      path.state:hover {
-        stroke: #000;
-      }
+        form {
+            font-size: 120%;
+        }
 
-      form {
-        font-size: 120%;
-      }
+        select {
+            font-size: inherit;
+        }
 
-      select {
-        font-size: inherit;
-      }
+        #placeholder {
+            position: absolute;
+            z-index: -1;
+            display: block;
+            left: 0;
+            top: 0;
+        }
 
-      #placeholder {
-        position: absolute;
-        z-index: -1;
-        display: block;
-        left: 0;
-        top: 0;
-      }
+        #theyear {
+            line-height: 0.4em;
+            border: 1px;
+            font-size: 4em;
+            position: absolute;
+            top: 40px;
+            right: 0px;
+        }
+
+        #about {
+            width: 600px;
+            font-size: .9em;
+        }
+
+        #credits {
+            position: absolute;
+            bottom: 10px;
+            right: 0px;
+            font-size: 1em;
+        }
 
     </style>
-  </head>
-  <body>
-    <div id="container">
-      <h1>Cartograms with d3 &amp; TopoJSON</h1>
-      <form>
-        <p>
-          <label>Scale by <select id="field"></select></label>
-          <label>in <select id="year"></select></label>
-          <span id="status"></span>
-        </p>
-      </form>
-      <div id="map-container">
+</head>
+<body>
+<div id="container">
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+    <h1>World scaled by number of documents in Web of Science by Authors Living There</h1>
+    <div id="map-container">
         <img id="placeholder" alt="placeholder image for old browsers" src="placeholder.png">
         <svg id="map"></svg>
-      </div>
-      <div id="about">
-        <h2>About</h2>
-        <p><a href="cartogram.js">cartogram.js</a> is a JavaScript implementation of
-        <a href="http://lambert.nico.free.fr/tp/biblio/Dougeniketal1985.pdf">an algoritm to construct continuous area cartograms</a>,
-        by James A. Dougenik, Nicholas R. Chrisman and Duane R. Niemeyer,
-        &copy;1985 by the Association of American Geographers. This example combines
-        <a href="http://github.com/mbostock/topojson">TopoJSON</a>-encoded 
-        boundaries of the United States from
-        <a href="http://www.naturalearthdata.com/downloads/110m-cultural-vectors/">Natural Earth</a>
-        with
-        <a href="http://www.census.gov/popest/data/state/totals/2011/">2011 US Census population estimates</a>
-        to size each state proportionally.</p>
-        
-        <p>There&rsquo;s also a
-        <a class="hashish" href="?segmentized">segmentized topology</a>,
-        which distorts the shapes more fluidly than the
-        <a class="hashish" href="?">original</a>.</p>
-
-        <p>Designed and built by <a href="http://stamen.com/studio/shawn">Shawn Allen</a> at
-        <a href="http://stamen.com">Stamen</a>. But
-        <a href="http://d3js.org">d3.js</a> does most of the heavy lifting;
-        colors by <a href="http://colorbrewer2.org">colorbrewer</a>.</p>
-      </div>
-
-      <a href="https://github.com/shawnbot/d3-cartogram/"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+        <div id="theyear">
+            <span></span><br />
+            <input style="position:relative; width:110px" type="range" min="1990" max="2011" value="1990">
+        </div>
+        <div id="credits">Created by <a href="https://twitter.com/intent/follow?screen_name=juancommander">@juancommander</a> using <a href="http://d3js.org">d3.js</a> and <a href="https://github.com/shawnbot/d3-cartogram/">cartogram.js</a></div>
     </div>
-    <script>
+    <form>
+        <p>
+            <!--<label>Scale by <select id="field"></select></label>-->
+            <!--<label>in <select id="year"></select></label>-->
+            <!--<span id="status"></span>-->
+        </p>
+    </form>
+    <div id="about">
+        <h2>About</h2>
+        <p>
+            This map was produced by Juan Pablo Alperin (<a href="https://twitter.com/intent/follow?screen_name=juancommander">@juancommander</a>) using
+            <a href="http://d3js.org">d3.js</a> and <a href="https://github.com/shawnbot/d3-cartogram/">cartogram.js</a>.
+            It was inspired by the out of date map over at <a href="http://worldmapper.org/display.php?selected=205">worldmapper.org</a>.
+            Unfortunately, not much has changed. Due to differences in the implementations, the two maps cannot be directly
+            compared to one another.
+        </p>
+        <p>
+            Juan Pablo is a PhD Candidate at Stanford University and a researcher with the <a href="http://pkp.sfu.ca">Public Knowledge Project</a>.
+        </p>
+        <p>
+            This work was carried out with the support of the IDRC-funded project,
+            <a href="http://flacso.org.br/oa/calidad-en-la-comunicacion-cientifica-abierta-de-america-latina/?lang=en">Quality in the Open Scholarly Communication of Latin America</a>.
+            The data are from Thomson Reuters and were collected by the Mimir Project conducted at Stanford University by Daniel A. McFarland, Dan Jurafsky, Chris Manning, and Woody Powell,
+            which was generously funded by the Office of the President at Stanford University and by the National Science Foundation [Award 0835614]. </p>
+        <p>
+            The code (including most of this page) was adapted from the example provided by
+            <a href="https://github.com/shawnbot/d3-cartogram/">shawnbot</a>.
+            You can see the source code over on <a href="https://github.com/jalperin/d3-cartogram">Juan's github</a>.
+        </p>
+</div>
+<script>
 
-      // hide the form if the browser doesn't do SVG,
-      // (then just let everything else fail)
-      if (!document.createElementNS) {
-        document.getElementsByTagName("form")[0].style.display = "none";
-      }
+// hide the form if the browser doesn't do SVG,
+// (then just let everything else fail)
+if (!document.createElementNS) {
+    document.getElementsByTagName("form")[0].style.display = "none";
+}
 
-      // field definitions from:
-      // <http://www.census.gov/popest/data/national/totals/2011/files/NST-EST2011-alldata.pdf>
-      var percent = (function() {
+// field definitions from:
+// <http://www.census.gov/popest/data/national/totals/2011/files/NST-EST2011-alldata.pdf>
+var percent = (function() {
             var fmt = d3.format(".2f");
             return function(n) { return fmt(n) + "%"; };
-          })(),
-          fields = [
-            {name: "(no scale)", id: "none"},
-            // {name: "Census Population", id: "censuspop", key: "CENSUS%dPOP", years: [2010]},
-            // {name: "Estimate Base", id: "censuspop", key: "ESTIMATESBASE%d", years: [2010]},
-            {name: "Population Estimate", id: "popest", key: "POPESTIMATE%d"},
-            {name: "Population Change", id: "popchange", key: "NPOPCHG_%d", format: "+,"},
-            {name: "Births", id: "births", key: "BIRTHS%d"},
-            {name: "Deaths", id: "deaths", key: "DEATHS%d"},
-            {name: "Natural Increase", id: "natinc", key: "NATURALINC%d", format: "+,"},
-            {name: "Int'l Migration", id: "intlmig", key: "INTERNATIONALMIG%d", format: "+,"},
-            {name: "Domestic Migration", id: "domesticmig", key: "DOMESTICMIG%d", format: "+,"},
-            {name: "Net Migration", id: "netmig", key: "NETMIG%d", format: "+,"},
-            {name: "Residual", id: "residual", key: "RESIDUAL%d", format: "+,"},
-            {name: "Birth Rate", id: "birthrate", key: "RBIRTH%d", years: [2011], format: percent},
-            {name: "Death Rate", id: "deathrate", key: "RDEATH%d", years: [2011], format: percent},
-            {name: "Natural Increase Rate", id: "natincrate", key: "RNATURALINC%d", years: [2011], format: percent},
-            {name: "Int'l Migration Rate", id: "intlmigrate", key: "RINTERNATIONALMIG%d", years: [2011], format: percent},
-            {name: "Net Domestic Migration Rate", id: "domesticmigrate", key: "RDOMESTICMIG%d", years: [2011], format: percent},
-            {name: "Net Migration Rate", id: "netmigrate", key: "RNETMIG%d", years: [2011], format: percent},
-          ],
-          years = [2010, 2011],
-          fieldsById = d3.nest()
-            .key(function(d) { return d.id; })
-            .rollup(function(d) { return d[0]; })
-            .map(fields),
-          field = fields[0],
-          year = years[0],
-          colors = colorbrewer.RdYlBu[3]
-            .reverse()
-            .map(function(rgb) { return d3.hsl(rgb); });
+        })(),
+        years = [1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011],
+        fields = [
+//            {name: "(no scale)", id: "none"},
+            {name: "Number of Articles in ISI", id: "num_articles", key: "num_articles%d", years: years, format: "+,"}
+//            {name: "Population", id: "num_articles2001", key: "num_articles2001", format: "+,"},
+//            {name: "% FB users", id: "p_fb_users", key: "p_fb_users", format: percent},
+            // {name: "% of Articles", id: "p_int_users", key: "p_int_users", format: percent},
+//            {name: "% Internet users", id: "p_int_users", key: "p_int_users", format: percent},
+//            {name: "% FB users of Internet Users", id: "p_fb_users_of_int_users", key: "p_fb_users_of_int_users", format: percent}
+        ],
+        fieldsById = d3.nest()
+                .key(function(d) { return d.id; })
+                .rollup(function(d) { return d[0]; })
+                .map(fields),
+        field = fields[0],
+        year = years[0],
+        colors = colorbrewer.RdYlBu[3]
+                .reverse()
+                .map(function(rgb) { return d3.hsl(rgb); });
 
-      var body = d3.select("body"),
-          stat = d3.select("#status");
+var body = d3.select("body"),
+        stat = d3.select("#status");
 
-      var fieldSelect = d3.select("#field")
-        .on("change", function(e) {
-          field = fields[this.selectedIndex];
-          location.hash = "#" + [field.id, year].join("/");
-        });
+//var fieldSelect = d3.select("#field")
+//        .on("change", function(e) {
+//            field = fields[this.selectedIndex];
+//            location.hash = "#" + [field.id, year].join("/");
+//        });
+//
+//fieldSelect.selectAll("option")
+//        .data(fields)
+//        .enter()
+//        .append("option")
+//        .attr("value", function(d) { return d.id; })
+//        .text(function(d) { return d.name; });
 
-      fieldSelect.selectAll("option")
-        .data(fields)
-        .enter()
-        .append("option")
-          .attr("value", function(d) { return d.id; })
-          .text(function(d) { return d.name; });
+//var yearSelect = d3.select("#year")
+//        .on("change", function(e) {
+//            year = years[this.selectedIndex];
+//            location.hash = "#" + [field.id, year].join("/");
+//        });
+//
+//yearSelect.selectAll("option")
+//        .data(years)
+//        .enter()
+//        .append("option")
+//        .attr("value", function(y) { return y; })
+//        .text(function(y) { return y; })
 
-      var yearSelect = d3.select("#year")
-        .on("change", function(e) {
-          year = years[this.selectedIndex];
-          location.hash = "#" + [field.id, year].join("/");
-        });
+d3.select("input[type=range]").on("change", function() { year = this.value; update(); });
+d3.select("input[type=range]").on("click", function() { clearInterval(intervalId); });
 
-      yearSelect.selectAll("option")
-        .data(years)
-        .enter()
-        .append("option")
-          .attr("value", function(y) { return y; })
-          .text(function(y) { return y; })
+var intervalId = setInterval(function(){
+    if (year < d3.max(years)) {
+        year = year + 1;
+        update()
+    } else {
+        setInterval(intervalId);
+    }
+},2000);
 
-      var map = d3.select("#map"),
-          zoom = d3.behavior.zoom()
-            .translate([-38, 32])
-            .scale(.94)
-            .scaleExtent([0.5, 10.0])
-            .on("zoom", updateZoom),
-          layer = map.append("g")
-            .attr("id", "layer"),
-          states = layer.append("g")
-            .attr("id", "states")
-            .selectAll("path");
+var map = d3.select("#map"),
+        zoom = d3.behavior.zoom()
+                .translate([-38, 32])
+                .scale(.94)
+                .scaleExtent([0.5, 10.0])
+                .on("zoom", updateZoom),
+        layer = map.append("g")
+                .attr("id", "layer"),
+        countries = layer.append("g")
+                .attr("id", "countries")
+                .selectAll("path");
 
-      // map.call(zoom);
-      updateZoom();
+// map.call(zoom);
+updateZoom();
 
-      function updateZoom() {
-        var scale = zoom.scale();
-        layer.attr("transform",
-          "translate(" + zoom.translate() + ") " +
-          "scale(" + [scale, scale] + ")");
-      }
+function updateZoom() {
+    var scale = zoom.scale();
+    layer.attr("transform",
+            "translate(" + zoom.translate() + ") " +
+                    "scale(" + [scale, scale] + ")");
+}
 
-      var proj = d3.geo.albersUsa(),
-          topology,
-          geometries,
-          rawData,
-          dataById = {},
-          carto = d3.cartogram()
-            .projection(proj)
-            .properties(function(d) {
-              return dataById[d.id];
-            })
-            .value(function(d) {
-              return +d.properties[field];
-            });
+var proj = d3.geo.equirectangular(),
+        topology,
+        geometries,
+        rawData,
+        dataById = {},
+        carto = d3.cartogram()
+                .projection(proj)
+                .properties(function(d) {
+                    if (d.id in dataById) {
+                        return dataById[d.id];
+                    } else {
+                        var tmp = d3.keys(dataById[d3.keys(dataById)[0]]);
+                        var ret = {"numcode": d.id};
+                        tmp.forEach(function(i){ret[i] = 0});
+                        return ret;
+                    }
+                })
+                .value(function(d) {
+                    return +d.properties[field];
+                });
 
-      window.onhashchange = function() {
-        parseHash();
-      };
+//window.onhashchange = function() {
+//    parseHash();
+//};
 
-      var segmentized = location.search === "?segmentized",
-          url = ["data",
-            segmentized ? "us-states-segmentized.topojson" : "us-states.topojson"
-          ].join("/");
-      d3.json(url, function(topo) {
-        topology = topo;
-        geometries = topology.objects.states.geometries;
-        d3.csv("data/nst_2011.csv", function(data) {
-          rawData = data;
-          dataById = d3.nest()
-            .key(function(d) { return d.NAME; })
-            .rollup(function(d) { return d[0]; })
-            .map(data);
-          init();
-        });
-      });
+var segmentized = location.search === "?segmentized",
+        url = ["data",
+            segmentized ? "world-segmentized.topojson" : "world-110m.json"
+        ].join("/");
+d3.json(url, function(topo) {
+    topology = topo;
+    geometries = topology.objects.countries.geometries;
+    d3.csv("data/isi_article_counts.csv", function(data) {
+        rawData = data;
+        dataById = d3.nest()
+                .key(function(d) { return d.numcode; })
+                .rollup(function(d) { return d[0]; })
+                .map(data);
+        init();
+    });
+});
 
-      function init() {
-        var features = carto.features(topology, geometries),
+function init() {
+    var features = carto.features(topology, geometries),
             path = d3.geo.path()
-              .projection(proj);
+                    .projection(proj);
 
-        states = states.data(features)
-          .enter()
-          .append("path")
+    countries = countries.data(features)
+            .enter()
+            .append("path")
             .attr("class", "state")
             .attr("id", function(d) {
-              return d.properties.NAME;
+                return d.id;
             })
             .attr("fill", "#fafafa")
             .attr("d", path);
 
-        states.append("title");
+    countries.append("title");
 
-        parseHash();
-      }
+//    parseHash();
+}
 
-      function reset() {
-        stat.text("");
-        body.classed("updating", false);
+function reset() {
+    stat.text("");
+//    body.classed("updating", false);
 
-        var features = carto.features(topology, geometries),
+    var features = carto.features(topology, geometries),
             path = d3.geo.path()
-              .projection(proj);
+                    .projection(proj);
 
-        states.data(features)
-          .transition()
+    countries.data(features)
+            .transition()
             .duration(750)
             .ease("linear")
             .attr("fill", "#fafafa")
             .attr("d", path);
 
-        states.select("title")
-          .text(function(d) {
-            return d.properties.NAME;
-          });
-      }
+    countries.select("title")
+            .text(function(d) {
+                return d.id;
+            });
+}
 
-      function update() {
-        var start = Date.now();
-        body.classed("updating", true);
+function update() {
+    var start = Date.now();
+//    body.classed("updating", true);
 
-        var key = field.key.replace("%d", year),
+    var key = field.key.replace("%d", year),
             fmt = (typeof field.format === "function")
-              ? field.format
-              : d3.format(field.format || ","),
+                    ? field.format
+                    : d3.format(field.format || ","),
             value = function(d) {
-              return +d.properties[key];
+                return +d.properties[key];
             },
-            values = states.data()
-              .map(value)
-              .filter(function(n) {
-                return !isNaN(n);
-              })
-              .sort(d3.ascending),
+            values = countries.data()
+                    .map(value)
+                    .filter(function(n) {
+                        return !isNaN(n);
+                    })
+                    .sort(d3.ascending),
             lo = values[0],
             hi = values[values.length - 1];
 
-        var color = d3.scale.linear()
-          .range(colors)
-          .domain(lo < 0
-            ? [lo, 0, hi]
-            : [lo, d3.mean(values), hi]);
+    var color = d3.scale.linear()
+            .range(colors)
+            .domain(lo < 0
+                    ? [lo, 0, hi]
+                    : [lo, d3.mean(values), hi]);
 
-        // normalize the scale to positive numbers
-        var scale = d3.scale.linear()
-          .domain([lo, hi])
-          .range([1, 1000]);
+    // normalize the scale to positive numbers
+    var scale = d3.scale.linear()
+            .domain([lo, hi])
+            .range([1, 1000]);
 
-        // tell the cartogram to use the scaled values
-        carto.value(function(d) {
-          return scale(value(d));
-        });
+    // tell the cartogram to use the scaled values
+    carto.value(function(d) {
+        return scale(value(d));
+    });
 
-        // generate the new features, pre-projected
-        var features = carto(topology, geometries).features;
+    // generate the new features, pre-projected
+    var features = carto(topology, geometries).features;
 
-        // update the data
-        states.data(features)
-          .select("title")
+    // update the data
+    countries.data(features)
+            .select("title")
             .text(function(d) {
-              return [d.properties.NAME, fmt(value(d))].join(": ");
+                return [d.id, fmt(value(d))].join(": ");
             });
 
-        states.transition()
-          .duration(750)
-          .ease("linear")
-          .attr("fill", function(d) {
-            return color(value(d));
-          })
-          .attr("d", carto.path);
+    countries.transition()
+            .duration(750)
+            .ease("linear")
+            .attr("fill", function(d) {
+                return color(value(d));
+            })
+            .attr("d", carto.path);
 
-        var delta = (Date.now() - start) / 1000;
-        stat.text(["calculated in", delta.toFixed(1), "seconds"].join(" "));
-        body.classed("updating", false);
-      }
+//    var delta = (Date.now() - start) / 1000;
+//    stat.text(["calculated in", delta.toFixed(1), "seconds"].join(" "));
+//    body.classed("updating", false);
 
-      var deferredUpdate = (function() {
-        var timeout;
-        return function() {
-          var args = arguments;
-          clearTimeout(timeout);
-          stat.text("calculating...");
-          return timeout = setTimeout(function() {
+    d3.select("input[type=range]")[0][0].value=year;
+    d3.select("#theyear > span")[0][0].innerHTML=year;
+}
+
+var deferredUpdate = (function() {
+    var timeout;
+    return function() {
+        var args = arguments;
+        clearTimeout(timeout);
+        stat.text("calculating...");
+        return timeout = setTimeout(function() {
             update.apply(null, arguments);
-          }, 10);
-        };
-      })();
+        }, 10);
+    };
+})();
 
-      var hashish = d3.selectAll("a.hashish")
-        .datum(function() {
-          return this.href;
-        });
+//var hashish = d3.selectAll("a.hashish")
+//        .datum(function() {
+//            return this.href;
+//        });
+//
+//function parseHash() {
+//    var parts = location.hash.substr(1).split("/"),
+//            desiredFieldId = parts[0],
+//            desiredYear = +parts[1];
+//
+//    field = fieldsById[desiredFieldId] || fields[0];
+//    year = (years.indexOf(desiredYear) > -1) ? desiredYear : years[0];
+//
+//    fieldSelect.property("selectedIndex", fields.indexOf(field));
+//
+//    if (field.id === "none") {
+//
+//        yearSelect.attr("disabled", "disabled");
+//        reset();
+//
+//    } else {
+//
+//        if (field.years) {
+//            if (field.years.indexOf(year) === -1) {
+//                year = field.years[0];
+//            }
+//            yearSelect.selectAll("option")
+//                    .attr("disabled", function(y) {
+//                        return (field.years.indexOf(y) === -1) ? "disabled" : null;
+//                    });
+//        } else {
+//            yearSelect.selectAll("option")
+//                    .attr("disabled", null);
+//        }
+//
+//        yearSelect
+//                .property("selectedIndex", years.indexOf(year))
+//                .attr("disabled", null);
+//
+//        deferredUpdate();
+//        location.replace("#" + [field.id, year].join("/"));
+//
+//        hashish.attr("href", function(href) {
+//            return href + location.hash;
+//        });
+//    }
+//}
 
-      function parseHash() {
-        var parts = location.hash.substr(1).split("/"),
-            desiredFieldId = parts[0],
-            desiredYear = +parts[1];
-
-        field = fieldsById[desiredFieldId] || fields[0];
-        year = (years.indexOf(desiredYear) > -1) ? desiredYear : years[0];
-
-        fieldSelect.property("selectedIndex", fields.indexOf(field));
-
-        if (field.id === "none") {
-
-          yearSelect.attr("disabled", "disabled");
-          reset();
-
-        } else {
-
-          if (field.years) {
-            if (field.years.indexOf(year) === -1) {
-              year = field.years[0];
-            }
-            yearSelect.selectAll("option")
-              .attr("disabled", function(y) {
-                return (field.years.indexOf(y) === -1) ? "disabled" : null;
-              });
-          } else {
-            yearSelect.selectAll("option")
-              .attr("disabled", null);
-          }
-
-          yearSelect
-            .property("selectedIndex", years.indexOf(year))
-            .attr("disabled", null);
-
-          deferredUpdate();
-          location.replace("#" + [field.id, year].join("/"));
-
-          hashish.attr("href", function(href) {
-            return href + location.hash;
-          });
-        }
-      }
-
-    </script>
-  </body>
+</script>
+</body>
 </html>
