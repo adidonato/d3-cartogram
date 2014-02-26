@@ -58,12 +58,12 @@
             margin: 0;
         }
 
-        path.state {
+        path.country {
             stroke: #666;
             stroke-width: .5;
         }
 
-        path.state:hover {
+        path.country:hover {
             stroke: #000;
         }
 
@@ -166,7 +166,7 @@ var percent = (function() {
         years = [1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011],
         fields = [
 //            {name: "(no scale)", id: "none"},
-            {name: "Number of Articles in ISI", id: "num_articles", key: "num_articles%d", years: years, format: "+,"}
+            {name: "Number of Articles in ISI", id: "num_articles", key: "num_articles%d", years: years}
 //            {name: "Population", id: "num_articles2001", key: "num_articles2001", format: "+,"},
 //            {name: "% FB users", id: "p_fb_users", key: "p_fb_users", format: percent},
             // {name: "% of Articles", id: "p_int_users", key: "p_int_users", format: percent},
@@ -296,9 +296,12 @@ function init() {
     countries = countries.data(features)
             .enter()
             .append("path")
-            .attr("class", "state")
+            .attr("class", "country")
             .attr("id", function(d) {
                 return d.id;
+            })
+            .attr("name", function(d) {
+                return d.properties.country;
             })
             .attr("fill", "#fafafa")
             .attr("d", path);
@@ -372,7 +375,7 @@ function update() {
     countries.data(features)
             .select("title")
             .text(function(d) {
-                return [d.id, fmt(value(d))].join(": ");
+                return [d.properties.country, fmt(value(d))].join(": ");
             });
 
     countries.transition()
